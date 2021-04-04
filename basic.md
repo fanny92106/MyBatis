@@ -86,3 +86,56 @@
 ![myBatisCoreConfigXML_0](imagePool/myBatisCoreConfigXML_0.png)
 ![myBatisCoreConfigXML_1](imagePool/myBatisCoreConfigXML_1.png)
 ![myBatisCoreConfigXML_2](imagePool/myBatisCoreConfigXML_2.png)
+
+
+
+3. 映射配置文件
+
+        1). mybatis允许增删改直接在接口中定义以下类型返回值, 无需更改映射配置文件
+                Integer, Long, Boolean, void
+![RedefineReturnType](imagePool/RedefineReturnType.png)
+
+        2). 增删改通过
+            sqlSessionFactory.openSession() 获取的session需要手动commit()
+            sqlSessionFactory.openSession(true) 获取的session会自动commit()
+![manualCommit](imagePool/manualCommit.png)
+        
+        3). 获取新增记录新生成的主键
+![getAutoIncrementKey_0](imagePool/getAutoIncrementKey_0.png)
+![getAutoIncrementKey_1](imagePool/getAutoIncrementKey_1.png)
+
+        4). 参数处理
+            
+            a. 单个参数: myBatis不会特殊处理
+                #{参数名}: 取出参数值, 参数名是什么都没关系
+            b. 多个参数: myBatis会做特殊处理, 多个参数会被封装成一个map,
+                默认情况下: 
+                    key: param1, param2..
+                    value:传入的值
+![getParameterUsingDefaultMapKey](imagePool/getParameterUsingDefaultMapKey.png)
+                        
+                自定义map的key:
+![customizeParamName](imagePool/customizeParamName.png)
+![getParamByCustomizedMapKey](imagePool/getParamByCustomizedMapKey.png)
+
+
+                传入POJO 或传入Map
+                    POJO: #{属性名}: 取出传入的POJO的属性名
+                    Map: #{key}: 取出Map中对应的值
+                
+                
+                如果多个参数不是业务模型中的数据, 但是会经常使用, 推荐来编写一个TO(Transfer Object)数据传输对象
+                    Page {
+                        int index;
+                        int size;
+                    }
+
+            c. #{}和${}取值的区别:
+                    #{}:是以预编译的形式, 是参数设置到sql语句中; PreparedStatement：防止sql注入
+                    ${}:取出的值直接拼装在sql语句;会有sql注入问题
+                    
+                    大多情况下, 应该使用#{}取值
+                    原生jdbc不支持占位符的地方可以使用${}进行取值
+                    比如分表, 排序
+                        select * from ${year}_salary where xxx;
+                        select * from tbl_employee order by ${f_name} ${order}
