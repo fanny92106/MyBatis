@@ -91,7 +91,7 @@
 
 3. 映射配置文件
 
-        1). mybatis允许增删改直接在接口中定义以下类型返回值, 无需更改映射配置文件
+         1). mybatis允许增删改直接在接口中定义以下类型返回值, 无需更改映射配置文件
                 Integer, Long, Boolean, void
 ![RedefineReturnType](imagePool/RedefineReturnType.png)
 
@@ -139,3 +139,35 @@
                     比如分表, 排序
                         select * from ${year}_salary where xxx;
                         select * from tbl_employee order by ${f_name} ${order}
+
+        5). 查询操作
+        
+            a. 如果返回值是List<T>, resultType指明是List存储元素的类型
+            b. 高级结果集映射: resultMap
+                - 自定义匹配结果集中的列名和Java对象的属性名, 可解决列名和属性名不一致的case
+                - resultMap和resultType需要二选一使用, 开发中通常是用resultMap
+                - 一旦使用resultMap, 建议把全列的映射都写上, 哪怕列名和属性名一直, 方便日后排查
+![resultMap](imagePool/resultMap.png)
+            
+            c. 联合查询
+            
+            ManyToOne: 
+                - 使用级联属性封装
+![ManyToOneSelectUsingConcatenateEncapsulate](imagePool/ManyToOneSelectUsingConcatenateEncapsulate.png)
+
+                - 使用association标签定义单个对象的封装规则
+![ManyToOneSelectUsingAssociationTag](imagePool/ManyToOneSelectUsingAssociationTag.png)
+
+                - 使用association标签进行分布查询 (可以使用延迟加载, 需配置setting里面的lazyLoadingEnabled设置)
+![ManyToOneSelectUsingAssotiationTagStep_0](imagePool/ManyToOneSelectUsingAssotiationTagStep_0.png)
+![ManyToOneSelectUsingAssotiationTagStep](imagePool/ManyToOneSelectUsingAssotiationTagStep.png)
+                
+                
+            OneToMany:
+            
+                - 使用collection标签定义嵌套结果集合
+![OneToManySelectUsingCollectionTag](imagePool/OneToManySelectUsingCollectionTag.png    )
+        
+                - 使用collection标签进行分布查询
+![OneToManySelectUsingCollectionTagStep_0](imagePool/OneToManySelectUsingCollectionTagStep_0.png)
+![OneToManySelectUsingCollectionTagStep](imagePool/OneToManySelectUsingCollectionTagStep.png)
