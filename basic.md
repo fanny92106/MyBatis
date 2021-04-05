@@ -160,7 +160,8 @@
 
                 - 使用association标签进行分布查询 (可以使用延迟加载, 需配置setting里面的lazyLoadingEnabled设置)
 ![ManyToOneSelectUsingAssotiationTagStep_0](imagePool/ManyToOneSelectUsingAssotiationTagStep_0.png)
-![ManyToOneSelectUsingAssotiationTagStep](imagePool/ManyToOneSelectUsingAssotiationTagStep.png)
+![ManyToOneSelectUsingAssotiationTagStep](imagePool/ManyToOneSelectUsingAssociationTagStep.png)
+                                                                                    
                 
                 
             OneToMany:
