@@ -197,3 +197,25 @@
             
             _databaseId: 如果配置了databaseIdProvider标签
                 _databaseId就是代表当前数据库的别名
+
+
+
+5. 缓存 -- 不专业
+
+        1). 一级缓存(本地缓存, 默认无需特别配置): sqlSession级别的缓存, 一级缓存是一直开启的
+                与数据库同一次会话期间查询到的数据会放在本地缓存中,
+                以后如果需要获取相同的数据, 直接从缓存中拿, 没必要再去查询数据库
+                
+            一级缓存失效的情况(没有使用当前一级缓存的情况, 效果就是还需要再向数据库发出查询):
+                a. sqlSession不同
+                b. sqlSession相同, 但查询条件/参数不同(当前一级缓存中还没有出现这个数据)
+                c. sqlSession相同, 两次查询之间执行了增删改操作, 不包含查操作(这次增删改操作可能对当前数据有影响)
+                d. sqlSession相同, 手动清除了以及缓存(缓存清空)
+
+        2). 二级缓存(基于namespace的全局缓存)
+                一个会话,查询一条数据, 这个数据就会被放在当前会话的以及缓存中
+                如果会话关闭或会话提交, 一级缓存中的数据会被保存到二级缓存中; 新的会话查询信息(使用同一个mapper), 就可以
+                参照二级缓存; 不同namespace查出的数据会放在自己对应的缓存中(map)
+                a. 核心配置文件配置 <setting name="cacheEnabled" value="true" />
+                b. 映射文件配置 <cache eviction="LRU" flushInterval="100000" readOnly="true" />
+![CachePrinciple](imagePool/CachePrinciple.png)
