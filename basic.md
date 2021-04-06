@@ -172,3 +172,28 @@
                 - 使用collection标签进行分布查询
 ![OneToManySelectUsingCollectionTagStep_0](imagePool/OneToManySelectUsingCollectionTagStep_0.png)
 ![OneToManySelectUsingCollectionTagStep](imagePool/OneToManySelectUsingCollectionTagStep.png)
+
+
+
+4. 动态SQL
+    
+        定义: 根据条件动态地拼接SQL
+
+        1). if标签: 传入一个对象, 如果所取的值不是null且不是空再进行where的条件匹配, 否则就滤掉
+![DynamicSqlIf](imagePool/DynamicSqlIf.png)
+
+      2). where标签: 如果第一个索取值是null被滤掉后, 后面的sql拼接会出现语法错误, eg: select * from tbl_table where and col=val;
+![DynamicSqlWhere](imagePool/DynamicSqlWhere.png)
+        
+        注: 使用where标签时, 可能会出现字符串拼串后置and的情况, 参考使用<trim>
+        
+      3). foreach标签: 批量插入
+![DynamicSqlForeach](imagePool/DynamicSqlForeach.png)
+
+      4). 动态传递参数
+            _parameter: 代表整个参数
+                单个参数: _parameter就是这个参数
+                多个参数: 参数会被封装成为一个map, _parameter就代表这个map
+            
+            _databaseId: 如果配置了databaseIdProvider标签
+                _databaseId就是代表当前数据库的别名
