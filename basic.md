@@ -3,6 +3,13 @@
 
 
 0. 持久层框架对比: Hibernate 和 MyBatis
+
+            - 半自动ORM持久层框架
+            - 分离SQL语句和业务逻辑代码(xmlMapper & interface & 动态代理 - 面向接口编程)
+            - 支持SQL定制
+            - 存储过程 Stored Procedure
+            - 高级映射 Advanced Mapping (object - record, 以及一对多, 多对一关系)
+            - 消除了jdbc代码手工设置参数和处理结果集
 ![HibernateVSMyBatis](imagePool/HibernateVSMyBatis.png)
 
 
@@ -46,28 +53,32 @@
         0). 将dtd约束绑定到config.xml文件, 使其可以自动提示标签内容
                 - dtd文件location: mybatis-VersionId.jar/org.apache.ibatis/builder/xml/mybatis-3-config.dtd, mybatis-3-mapper.dtd
 ![bindDtdRToXmlToEnableAutoRemind](imagePool/bindDtdRToXmlToEnableAutoRemind.png)
-
-       1). <properties> : 引入外部properties配置文件的内容:
+                      
+               - 文件内的内容需有序: properties -> settings -> typeAliases -> environments -> ..
+                      
+       1). <properties> : 设置资源信息或引入外部properties配置文件:
                 resource: 引入类路径下的资源
                 url: 引入网络路径或者磁盘路径下的资源
                 
-       2). <settings> : 包含很多重要的设置项
+       2). <settings> : 改变myBatis实现功能的行为
                 <setting> : 用来设置每一个设置项, name/value
                 
-       3). <typeAliases> : 别名处理器，为java类型起别名; 默认是类名小写
+       3). <typeAliases> : 别名处理器，为java类型起别名; 默认是类名小写 (不建议使用, 不方便维护)
                 <typeAlias type="" alias="" />
                 
                 
-       4).  <environments> : myBatis可以配置多种环境, default用来切换不同环境
+       4).  这部分配置, 之后都会由spring进行管理: dataSource, sessionFactory, transactionManager
+       
+            <environments> : myBatis可以配置多种环境, default用来切换不同环境
                <environment> : 配置具体的一个环境信息, include <transactionManager>和<dataSource>
                <transactionManager
-                   type="JDBC"
-                   type="MANAGED" />
+                   type="JDBC" -- jdbc原始事务: conn.setAutoCommit(false); transaction..; conn.commit()
+                   type="MANAGED" /> -- spring声明式事务管理
 
                <dataSource
-                   type="POOLED"
-                   type="UNPOOLED"
-                   type="JNDI"
+                   type="POOLED" -- 将db connection进行缓存
+                   type="UNPOOLED" -- 每一个connection都是新创建的
+                   type="JNDI" -- 调用上下文中的数据源(rarely use)
                    type=自定义数据源class implements DataSourceFactory接口 />
     
        5). <databaseIdProvide> : 支持多数据库厂商SQL语句
@@ -219,3 +230,4 @@
                 a. 核心配置文件配置 <setting name="cacheEnabled" value="true" />
                 b. 映射文件配置 <cache eviction="LRU" flushInterval="100000" readOnly="true" />
 ![CachePrinciple](imagePool/CachePrinciple.png)
+
