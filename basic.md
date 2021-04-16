@@ -106,51 +106,62 @@
                 Integer, Long, Boolean, void
 ![RedefineReturnType](imagePool/RedefineReturnType.png)
 
-        2). 增删改通过
+        2). sqlSession是否自动提交事务
             sqlSessionFactory.openSession() 获取的session需要手动commit()
             sqlSessionFactory.openSession(true) 获取的session会自动commit()
 ![manualCommit](imagePool/manualCommit.png)
         
-        3). 获取新增记录新生成的主键
+        3). 获取新增记录新生成的主键 -- 封装了原生jdbc的功能
+            - useGeneratedKeys: 可以使用自动生成的主键
+            - keyProperty: 将自动生成的主键赋值给传递过来的参数的哪一个属性
 ![getAutoIncrementKey_0](imagePool/getAutoIncrementKey_0.png)
 ![getAutoIncrementKey_1](imagePool/getAutoIncrementKey_1.png)
 
         4). 参数处理
-            
-            a. 单个参数: myBatis不会特殊处理
-                #{参数名}: 取出参数值, 参数名是什么都没关系
-            b. 多个参数: myBatis会做特殊处理, 多个参数会被封装成一个map,
-                默认情况下: 
-                    key: param1, param2..
-                    value:传入的值
-![getParameterUsingDefaultMapKey](imagePool/getParameterUsingDefaultMapKey.png)
-                        
-                自定义map的key:
-![customizeParamName](imagePool/customizeParamName.png)
-![getParamByCustomizedMapKey](imagePool/getParamByCustomizedMapKey.png)
 
-
-                传入POJO 或传入Map
-                    POJO: #{属性名}: 取出传入的POJO的属性名
-                    Map: #{key}: 取出Map中对应的值
-                
-                
-                如果多个参数不是业务模型中的数据, 但是会经常使用, 推荐来编写一个TO(Transfer Object)数据传输对象
-                    Page {
-                        int index;
-                        int size;
-                    }
-
-            c. #{}和${}取值的区别:
-                    #{}:是以预编译的形式, 是参数设置到sql语句中; PreparedStatement：防止sql注入
+            a. #{}和${}取值的区别:
+                    #{}:是以预编译的形式, 参数设置到sql语句中; PreparedStatement：防止sql注入
                     ${}:取出的值直接拼装在sql语句;会有sql注入问题
                     
                     大多情况下, 应该使用#{}取值
-                    原生jdbc不支持占位符的地方可以使用${}进行取值
-                    比如分表, 排序
-                        select * from ${year}_salary where xxx;
-                        select * from tbl_employee order by ${f_name} ${order}
+                    除了模糊查询, 批量删除
+     
+            
+            b. #{}和#{}参数取值的区别:
+                1. 当传输参数为单个String或基本数据类型或其包装类时(字面量)
+                    #{}:可以以任意的名字获取参数值
+                    ${}:只能以${value}或${_parameter}取值
+![paramSingleLiteral](imagePool/paramSingleLiteral.png)                    
+                    
+                2. 当传输参数为一个JavaBean或一个map时:
+                    #{}和${}都可以通过属性名直接获取属性值, 但是要注意${}的取字符串引号问题
+                    #{}: #{ename}, #{egender}, #{key}
+                    ${}: "${ename}", "${egender}", "${key}"
+![paramSingleJavaBean](imagePool/paramSingleJavaBean.png)
 
+![paramMap](imagePool/paramMap.png)
+
+                3. 当传输参数为多个参数时, myBatis会默认将这些参数放在map集合中!!
+                    #{}和${}都可以通过两种方式: 参数顺序重要, 名字不重要!!
+                        <1>键为arg0, arg1...argN-1作为参数来取值
+                        <2>键为param1, param2...paramN作为参数来取值
+                    但要注意${}取字符串的引号问题
+                    #{}: #{arg0}, #{arg1}, #{param1}, ${param2}
+                    ${}: "${arg0}", "${arg1}", "${param1}", "${param2}"
+![paramMultiParams_argIdx](imagePool/paramMultiParams_argIdx.png) 
+
+![paramMultiParams_paramIdx](imagePool/paramMultiParams_paramIdx.png)
+
+         IMPORTANT: But, 如果用顺序参数来取值不方便(还是想用参数名来取值), 可以使用@Param
+         就可以像pojo或map一样用指定的param-key来取值, 同时也还可以用param1, param2顺序取值
+![param@ParamInterface](imagePool/param@ParamInterface.png)
+
+![param@ParamMapperXml](imagePool/param@ParamMapperXml.png)
+
+                4. 当传入参数为List或Array时, mybatis会将List或Array放在map中
+                    List以list为键, Array以array为键
+                
+                
         5). 查询操作
         
             a. 如果返回值是List<T>, resultType指明是List存储元素的类型
