@@ -8,7 +8,7 @@
             - 分离SQL语句和业务逻辑代码(xmlMapper & interface & 动态代理 - 面向接口编程)
             - 支持SQL定制
             - 存储过程 Stored Procedure
-            - 高级映射 Advanced Mapping (object - record, 以及一对多, 多对一关系)
+            - 高级映射 Advanced Mapping (resultMap进行自定义映射)
             - 消除了jdbc代码手工设置参数和处理结果集
 ![HibernateVSMyBatis](imagePool/HibernateVSMyBatis.png)
 
@@ -162,39 +162,46 @@
                     List以list为键, Array以array为键
                 
                 
-        5). 查询操作
+        5). 自定义高级映射 (多对一/一对一, 一对多, 多对多)
         
             a. 如果返回值是List<T>, resultType指明是List存储元素的类型
             b. 高级结果集映射: resultMap
                 - 自定义匹配结果集中的列名和Java对象的属性名, 可解决列名和属性名不一致的case
                 - resultMap和resultType需要二选一使用, 开发中通常是用resultMap
                 - 一旦使用resultMap, 建议把全列的映射都写上, 哪怕列名和属性名一直, 方便日后排查
-![resultMap](imagePool/resultMap.png)
-            
+                
+            <resultMap>: 自定义映射, 处理复杂映射关系
+![AdvancedMappingResultMap](imagePool/AdvancedMappingResultMap.png)
+
+                <id column="eid" property="eid" />
+                <id>: 设置主键的映射关系, column设置字段名, property设置属性名
+                <result column="ename" property="ename" />
+                <result>: 设置非主键的映射关系, column设置字段名, property设置属性名
+                    
             c. 联合查询
             
-            ManyToOne: 
-                - 使用级联属性封装
-![ManyToOneSelectUsingConcatenateEncapsulate](imagePool/ManyToOneSelectUsingConcatenateEncapsulate.png)
+            #1. ManyToOne: 
+                - 方式1:
+![AdvancedMappingResultMap](imagePool/AdvancedMappingResultMap.png)
 
-                - 使用association标签定义单个对象的封装规则
-![ManyToOneSelectUsingAssociationTag](imagePool/ManyToOneSelectUsingAssociationTag.png)
+                - 方式2: 使用association, 底层利用反射创建一个关联dept对象
+![manyToOneAssociation](imagePool/manyToOneAssociation.png)
 
-                - 使用association标签进行分布查询 (可以使用延迟加载, 需配置setting里面的lazyLoadingEnabled设置)
-![ManyToOneSelectUsingAssotiationTagStep_0](imagePool/ManyToOneSelectUsingAssotiationTagStep_0.png)
-![ManyToOneSelectUsingAssotiationTagStep](imagePool/ManyToOneSelectUsingAssociationTagStep.png)
-                                                                                    
-                
-                
-            OneToMany:
-            
-                - 使用collection标签定义嵌套结果集合
-![OneToManySelectUsingCollectionTag](imagePool/OneToManySelectUsingCollectionTag.png    )
+                - 方式3: 使用association + 分步查询, 底层是利用deptMapper进型二次查询
+![manyToOneAssociationStep](imagePool/manyToOneAssociationStep.png)
+![manyToOneAssociationStepHelper](imagePool/manyToOneAssociationStepHelper.png)
+
+                - 方式3的延迟加载 (只对step查询起作用)
+![lazyLoadingConfigSetting](imagePool/lazyLoadingConfigSetting.png)
+
+
+
+            #2. OneToMany:
+                - 方式1: 使用collection
+![oneToManyCollection](imagePool/oneToManyCollection.png)
         
-                - 使用collection标签进行分布查询
-![OneToManySelectUsingCollectionTagStep_0](imagePool/OneToManySelectUsingCollectionTagStep_0.png)
-![OneToManySelectUsingCollectionTagStep](imagePool/OneToManySelectUsingCollectionTagStep.png)
-
+                - 方式2: 使用collection + 分步查询
+![oneToManyCollectionStep](imagePool/oneToManyCollectionStep.png)
 
 
 4. 动态SQL
