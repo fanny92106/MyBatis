@@ -125,7 +125,12 @@
                     
                     大多情况下, 应该使用#{}取值
                     除了模糊查询, 批量删除
-     
+                
+                <1>批量删除传入字符串: 不能使用#{}, 因为会自动添加‘ ‘单引号, 使得SQL语句变成
+                    delete from emp where eid in ('1, 2, 3'), 而正确的写法应该是
+                    delete from emp where eid in (1, 2, 3), 使用${}拼接字符串不会自动添加' '单引号
+![batchDelete](imagePool/batchDelete.png)
+![batchDeleteTest](imagePool/batchDeleteTest.png)
             
             b. #{}和#{}参数取值的区别:
                 1. 当传输参数为单个String或基本数据类型或其包装类时(字面量)
@@ -160,7 +165,6 @@
 
                 4. 当传入参数为List或Array时, mybatis会将List或Array放在map中
                     List以list为键, Array以array为键
-                
                 
         5). 自定义高级映射 (多对一/一对一, 一对多, 多对多)
         
@@ -206,27 +210,31 @@
 
 4. 动态SQL
     
-        定义: 根据条件动态地拼接SQL
+        定义: 使用各种标签根据条件动态地拼接SQL
 
-        1). if标签: 传入一个对象, 如果所取的值不是null且不是空再进行where的条件匹配, 否则就滤掉
+        1). if标签: 传入一个对象, 如果所取的属性值不是null且不是空再进行where的条件匹配, 否则就滤掉, 类似Builder模式的思路: 如果有选择条件才放入SQL where条件语句, 否则不放入
+        
+            添加 1=1 在where后面以保证where语句语法正确, in case 第一个<if>标签没进入, 或所有<if>标签都没进入
 ![DynamicSqlIf](imagePool/DynamicSqlIf.png)
 
-      2). where标签: 如果第一个索取值是null被滤掉后, 后面的sql拼接会出现语法错误, eg: select * from tbl_table where and col=val;
+      2). where标签: 添加where关键字并去掉多余的and, 比如如果第一个if判断取值是null的话,           
+          后面第一个有效的if判断之前的and会自动被去掉以保证where语句语法正确
+          
+          eg: select * from tbl_table where and col=val;
 ![DynamicSqlWhere](imagePool/DynamicSqlWhere.png)
         
-        注: 使用where标签时, 可能会出现字符串拼串后置and的情况, 参考使用<trim>
+        注: 使用where标签时, 可能会出现字符串拼串后置and的情况, 参考使用<trim>标签以避免SQL语法错误
+![trimTagDynamicSQL](imagePool/trimTagDynamicSQL.png)
         
-      3). foreach标签: 批量插入
+      3). foreach标签: 
+            - 批量插入
 ![DynamicSqlForeach](imagePool/DynamicSqlForeach.png)
+    
+            - 批量删除
+![batchDeleteMapper](imagePool/batchDeleteMapper.png)
 
-      4). 动态传递参数
-            _parameter: 代表整个参数
-                单个参数: _parameter就是这个参数
-                多个参数: 参数会被封装成为一个map, _parameter就代表这个map
-            
-            _databaseId: 如果配置了databaseIdProvider标签
-                _databaseId就是代表当前数据库的别名
-
+       4). sql标签
+            - 设置一段sql片段, 即公共SQL, 可以被当前映射文件中所有的SQL语句使用<include>标签所访问
 
 
 5. 缓存 -- 不专业
